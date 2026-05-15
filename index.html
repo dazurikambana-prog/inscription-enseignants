@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription Enseignants</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        header {
+            background: #4c51bf;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .form-section, .list-section {
+            padding: 40px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #4c51bf;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        button {
+            background: #4c51bf;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        button:hover { background: #434190; transform: translateY(-2px); }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th { background: #f8fafc; }
+        .export-btn {
+            background: #10b981;
+        }
+        .export-btn:hover { background: #059669; }
+        .count {
+            background: #4c51bf;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Inscription des Enseignants</h1>
+            <p>Enregistrez les enseignants au fur et à mesure</p>
+        </header>
+
+        <div class="form-section">
+            <h2 style="margin-bottom: 25px; color: #1f2937;">Nouvelle Inscription</h2>
+            <form id="inscriptionForm">
+                <div class="form-grid">
+                    <div>
+                        <label>Prénom</label>
+                        <input type="text" id="prenom" required>
+                    </div>
+                    <div>
+                        <label>Nom</label>
+                        <input type="text" id="nom" required>
+                    </div>
+                    <div>
+                        <label>École</label>
+                        <input type="text" id="ecole" required>
+                    </div>
+                    <div>
+                        <label>Numéro de téléphone</label>
+                        <input type="tel" id="numero" required>
+                    </div>
+                    <div>
+                        <label>Pays</label>
+                        <select id="pays" required>
+                            <option value="">Sélectionnez un pays</option>
+                            <option value="Bénin">Bénin</option>
+                            <option value="Togo">Togo</option>
+                            <option value="Nigeria">Nigeria</option>
+                            <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                            <option value="Ghana">Ghana</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">✅ Enregistrer l'enseignant</button>
+            </form>
+        </div>
+
+        <div class="list-section" style="background: #f8fafc;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Liste des Enseignants Inscrits (<span id="count" class="count">0</span>)</h2>
+                <button onclick="exportCSV()" class="export-btn">📥 Exporter en CSV</button>
+            </div>
+            <table id="listeEnseignants">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Prénom</th>
+                        <th>Nom</th>
+                        <th>École</th>
+                        <th>Numéro</th>
+                        <th>Pays</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('inscriptionForm');
+        const tbody = document.querySelector('#listeEnseignants tbody');
+        let enseignants = JSON.parse(localStorage.getItem('enseignants')) || [];
+
+        function renderTable() {
+            tbody.innerHTML = '';
+            enseignants.forEach((ens, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(ens.date).toLocaleDateString('fr-FR')}</td>
+                    <td>${ens.prenom}</td>
+                    <td>${ens.nom}</td>
+                    <td>${ens.ecole}</td>
+                    <td>${ens.numero}</td>
+                    <td>${ens.pays}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('count').textContent = enseignants.length;
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nouvelEnseignant = {
+                prenom: document.getElementById('prenom').value,
+                nom: document.getElementById('nom').value,
+                ecole: document.getElementById('ecole').value,
+                numero: document.getElementById('numero').value,
+                pays: document.getElementById('pays').value,
+                date: new Date().toISOString()
+            };
+
+            enseignants.unshift(nouvelEnseignant);
+            localStorage.setItem('enseignants', JSON.stringify(enseignants));
+
+            renderTable();
+            form.reset();
+
+            // Animation de succès
+            const btn = form.querySelector('button');
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Enregistré !';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '#4c51bf';
+            }, 2000);
+        });
+
+        function exportCSV() {
+            if (enseignants.length === 0) {
+                alert('Aucun enseignant à exporter !');
+                return;
+            }
+
+            let csv = 'Date,Prénom,Nom,École,Numéro,Pays\n';
+            enseignants.forEach(ens => {
+                csv += `${new Date(ens.date).toLocaleDateString('fr-FR')},${ens.prenom},${ens.nom},${ens.ecole},${ens.numero},${ens.pays}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'enseignants_inscrits.csv';
+            a.click();
+        }
+
+        // Initial render
+        renderTable();
+    </script>
+</body>
+</html>
